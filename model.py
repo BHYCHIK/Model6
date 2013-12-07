@@ -5,6 +5,7 @@ import math
 
 class QueueError(Exception): pass
 
+
 class PetrolStation(object):
     class State(object):
         freed = 0
@@ -38,18 +39,21 @@ class PetrolStation(object):
             self._waiting_event = self._generate_event(model_time)
             self._car = car
             self._car.set_start_filling(model_time)
-            self._logger.append("В %f машина %d начала заправляться на колонке %d в ряду %d" % (model_time, self._car.get_id(), self._station_id, self._row_id))
+            self._logger.append("В %f машина %d начала заправляться на колонке %d в ряду %d" % (
+            model_time, self._car.get_id(), self._station_id, self._row_id))
         elif self.get_state() == PetrolStation.State.filling:
             self._waiting_event = None
             self._state = PetrolStation.State.complete
             self._time_in_filling = self._time_in_filling + (model_time - self._last_known_time)
             self._car.set_stop_filling(model_time)
-            self._logger.append("В %f машина %d закончила заправляться на колонке %d в ряду %d" % (model_time, self._car.get_id(), self._station_id, self._row_id))
+            self._logger.append("В %f машина %d закончила заправляться на колонке %d в ряду %d" % (
+            model_time, self._car.get_id(), self._station_id, self._row_id))
         elif self.get_state() == PetrolStation.State.complete:
             self._waiting_event = None
             self._state = PetrolStation.State.freed
             self._car.set_left(model_time)
-            self._logger.append("В %f машина %d уехала с колонки %d в ряду %d" % (model_time, self._car.get_id(), self._station_id, self._row_id))
+            self._logger.append("В %f машина %d уехала с колонки %d в ряду %d" % (
+            model_time, self._car.get_id(), self._station_id, self._row_id))
             self._car = None
             self._time_in_complete = self._time_in_complete + (model_time - self._last_known_time)
 
@@ -123,6 +127,7 @@ class PetrolStationsRow(object):
         self._queue.insert(0, car)
         self._try_to_get_from_queue(model_time)
 
+
 class ModelEvent(object):
     def __init__(self, time):
         self._time = time
@@ -145,6 +150,7 @@ class GenerationEvent(ModelEvent):
     def __repr__(self):
         return "Generate at %f" % self.get_planned_time()
 
+
 class ProcessingEvent(ModelEvent):
     def __init__(self, time, row_id, station_id):
         super(ProcessingEvent, self).__init__(time)
@@ -159,6 +165,7 @@ class ProcessingEvent(ModelEvent):
 
     def __repr__(self):
         return "Process at %f" % self.get_planned_time()
+
 
 class Car(object):
     def __init__(self, id, entered):
@@ -182,11 +189,12 @@ class Car(object):
 
     def __repr__(self):
         return "Машина %d приехала в %f, начала заправляться в %f, закончила заправляться в %f, уехала в %f" % \
-            (self._id, self._entered, self._start_filling, self._end_filling, self._left)
+               (self._id, self._entered, self._start_filling, self._end_filling, self._left)
 
     def __str__(self):
         return "Машина %d приехала в %f, начала заправляться в %f, закончила заправляться в %f, уехала в %f" % \
-            (self._id, self._entered, self._start_filling, self._end_filling, self._left)
+               (self._id, self._entered, self._start_filling, self._end_filling, self._left)
+
 
 class Generator(object):
     def __init__(self, excepted_value, logger):
@@ -200,14 +208,18 @@ class Generator(object):
     def generate_event(self, model_time):
         self._car_id = self._car_id + 1
         ev = GenerationEvent(self.generate_time() + model_time, self._car_id)
-        self._logger.append("В %f запланирован приезд машины %d в %f" % (model_time, self._car_id, ev.get_planned_time()))
+        self._logger.append(
+            "В %f запланирован приезд машины %d в %f" % (model_time, self._car_id, ev.get_planned_time()))
         return ev
+
 
 class Model(object):
     def __init__(self, gen_expected_value, process_expected_value, process_halfrange, petrol_stations_num, rows_num):
         self._logger = []
         self._generator = Generator(gen_expected_value, self._logger)
-        self._rows = [PetrolStationsRow(petrol_stations_num, process_expected_value, process_halfrange, row_id, self._logger) for row_id in range(0, rows_num)]
+        self._rows = [
+            PetrolStationsRow(petrol_stations_num, process_expected_value, process_halfrange, row_id, self._logger) for
+            row_id in range(0, rows_num)]
         self._model_time = 0
         self._planned_generation_event = self._generator.generate_event(self._model_time)
         self._cars = []
@@ -239,7 +251,8 @@ class Model(object):
                 if min_queue > self._rows[i].get_queue_size():
                     min_queue = self._rows[i].get_queue_size()
                     min_queue_index = i
-            self._logger.append("В %f машина %d встала в очередь %d" % (self._model_time, car.get_id(), min_queue_index))
+            self._logger.append(
+                "В %f машина %d встала в очередь %d" % (self._model_time, car.get_id(), min_queue_index))
             self._rows[min_queue_index].accept_to_queue(self._model_time, car)
             self._planned_generation_event = self._generator.generate_event(self._model_time)
         elif isinstance(ev, ProcessingEvent):
