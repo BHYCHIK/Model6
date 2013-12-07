@@ -264,7 +264,7 @@ class Model(object):
         return self._logger[:]
 
     def get_cars(self):
-        self._cars[:]
+        return self._cars[:]
 
     def get_avg_time_in_queue(self):
         counted = 0
@@ -299,3 +299,6 @@ class Model(object):
             for station in row._stations:
                 t = t + station._time_in_complete
         return t
+
+    def get_modeling_time(self):
+        return self._model_time
